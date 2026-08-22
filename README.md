@@ -20,7 +20,7 @@ Codex helped with most of the code and implementation. I made the architectural 
 
 ## How to run the project
 
-Open `Claritas.xcodeproj` in Xcode 27 or newer. The original Swift Package project is retained in `Claritas.swiftpm`.
+Open `Claritas.xcodeproj` in Xcode 26 or newer. This project uses Apple Intelligence APIs introduced with the iOS 26 SDK.
 
 To run the app:
 
@@ -40,5 +40,5 @@ Never commit a real API key. Keys are stored locally in the Keychain and are not
 ## Requirements
 
 - iOS 26 or newer
-- Xcode 27 or newer
+- Xcode 26 or newer
 - Apple Intelligence is optional when an OpenAI-compatible provider is configured
