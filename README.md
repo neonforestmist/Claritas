@@ -52,3 +52,17 @@ Never commit a real API key. Keys are stored locally in the Keychain and are not
 - iOS 26 or newer
 - Xcode 26 or newer
 - Apple Intelligence is optional when an OpenAI-compatible provider is configured
+
+## Screenshots
+
+### Prediction
+
+![Claritas prediction experience](Screenshots/claritas-prediction.png)
+
+### AI vending machine
+
+![Claritas AI vending machine experience](Screenshots/claritas-vending-machine.png)
+
+### Homework story
+
+![Claritas homework story experience](Screenshots/claritas-homework-story.png)

@@ -71,12 +71,6 @@ struct SettingsView: View {
                     }
                 }
 
-                Section("About Claritas") {
-                    LabeledContent("Event", value: "OpenAI Discord Challenge")
-                    LabeledContent("Challenge", value: "Build For Good")
-                    Text("Claritas helps people understand AI through clear, interactive lessons and scenarios.")
-                        .foregroundStyle(.secondary)
-                }
             }
             .navigationTitle("Settings")
             .alert("Saved", isPresented: $showingSaved) {
