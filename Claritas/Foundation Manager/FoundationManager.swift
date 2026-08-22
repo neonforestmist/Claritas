@@ -30,7 +30,7 @@ final class FoundationManager {
     }
     
     init() {
-        apiEndpoint = environment["OPENAI_API_ENDPOINT"] ?? "https://api.openai.com/v1/chat/completions"
+        apiEndpoint = environment["OPENAI_API_ENDPOINT"] ?? "https://api.openai.com/v1"
         model = environment["OPENAI_MODEL"] ?? "gpt-5.6-luna"
         let savedProvider = UserDefaults.standard.string(forKey: "claritas.ai-provider")
         provider = AIProvider(rawValue: savedProvider ?? "") ?? (environment["OPENAI_API_KEY"] == nil ? .appleIntelligence : .openAI)
@@ -47,7 +47,9 @@ final class FoundationManager {
 
     @MainActor
     func testAPIConnection() async throws {
-        guard let url = URL(string: apiEndpoint), !apiKey.isEmpty else {
+        let baseURL = apiEndpoint.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let requestURL = baseURL.hasSuffix("/chat/completions") ? baseURL : "\(baseURL)/chat/completions"
+        guard let url = URL(string: requestURL), !apiKey.isEmpty else {
             throw APIError.invalidConfiguration
         }
         var request = URLRequest(url: url)

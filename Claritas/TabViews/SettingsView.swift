@@ -34,10 +34,10 @@ struct SettingsView: View {
 
                 if manager.provider != .appleIntelligence {
                     Section(manager.provider == .openAI ? "OpenAI API" : "OpenAI-compatible API") {
-                        TextField("Endpoint", text: $manager.apiEndpoint)
+                        TextField("Base URL", text: $manager.apiEndpoint)
                             .textInputAutocapitalization(.never)
                             .keyboardType(.URL)
-                        TextField("Model", text: $manager.model)
+                        TextField("Model ID", text: $manager.model)
                             .textInputAutocapitalization(.never)
 
                         HStack {

@@ -39,7 +39,7 @@ Developers can also provide configuration through environment variables. Copy `.
 
 ```text
 OPENAI_API_KEY=your-api-key
-OPENAI_API_ENDPOINT=https://api.openai.com/v1/chat/completions
+OPENAI_API_ENDPOINT=https://api.openai.com/v1
 OPENAI_MODEL=gpt-5.6-luna
 ```
 
