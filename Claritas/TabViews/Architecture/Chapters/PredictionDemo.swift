@@ -209,7 +209,7 @@ private struct PredictionAutocompleteView: View {
 
     var body: some View {
         Group {
-            if manager.isModelAvailable {
+            if manager.provider != .appleIntelligence || manager.isModelAvailable {
 #if os(macOS)
                 macContent
 #else

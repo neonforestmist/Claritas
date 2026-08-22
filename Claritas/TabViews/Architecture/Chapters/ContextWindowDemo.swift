@@ -210,7 +210,7 @@ private struct ContextWindowChatDemoView: View {
 
     var body: some View {
         Group {
-            if manager.isModelAvailable {
+            if manager.provider != .appleIntelligence || manager.isModelAvailable {
                 chatContent
             } else {
                 IntelligenceUnavailableView()
@@ -282,9 +282,13 @@ private struct ContextWindowChatDemoView: View {
         isResponding = true
 
         let activeMessages = Array(messages.suffix(contextLimit))
+        let apiConfiguration = manager.apiConfiguration
 
         Task {
-            let result = await ContextWindowModelResponder.generateReply(activeMessages: activeMessages)
+            let result = await ContextWindowModelResponder.generateReply(
+                activeMessages: activeMessages,
+                configuration: apiConfiguration
+            )
 
             await MainActor.run {
                 isResponding = false
@@ -401,7 +405,10 @@ private enum ContextWindowModelResponder {
     Keep your answers concise.
     """
 
-    static func generateReply(activeMessages: [ContextMessage]) async -> Result<String, ContextWindowResponderError> {
+    static func generateReply(
+        activeMessages: [ContextMessage],
+        configuration: APIConfiguration
+    ) async -> Result<String, ContextWindowResponderError> {
         let formattedContext = activeMessages.map { message in
             "\(message.role.label): \(message.text)"
         }.joined(separator: "\n")
@@ -412,6 +419,17 @@ private enum ContextWindowModelResponder {
 
         Please respond to the final User message above.
         """
+
+        if configuration.provider != .appleIntelligence {
+            do {
+                return .success(try await OpenAICompatibleClient.complete(
+                    prompt: "System instructions:\n\(systemPrompt)\n\n\(prompt)",
+                    configuration: configuration
+                ))
+            } catch {
+                return .failure(ContextWindowResponderError(error.localizedDescription))
+            }
+        }
 
         let instructions = Instructions {
             systemPrompt

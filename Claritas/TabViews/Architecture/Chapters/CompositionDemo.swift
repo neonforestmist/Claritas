@@ -615,7 +615,7 @@ private struct CompositionLabView: View {
 
     var body: some View {
         Group {
-            if manager.isModelAvailable {
+            if manager.provider != .appleIntelligence || manager.isModelAvailable {
                 VStack {
                     if messages.isEmpty {
                         labEmptyState
@@ -724,12 +724,14 @@ private struct CompositionLabView: View {
         messages.append(userMessage)
         let conversationSnapshot = messages
         let currentSystemPrompt = systemPrompt
+        let apiConfiguration = manager.apiConfiguration
 
         responseTask?.cancel()
         responseTask = Task {
             let result = await CompositionChatEngine.generateReply(
                 systemPrompt: currentSystemPrompt,
-                conversation: conversationSnapshot
+                conversation: conversationSnapshot,
+                configuration: apiConfiguration
             )
             if Task.isCancelled { return }
             await MainActor.run {
@@ -1125,7 +1127,8 @@ private enum CompositionChatEngine {
 
     static func generateReply(
         systemPrompt: String,
-        conversation: [CompositionMessage]
+        conversation: [CompositionMessage],
+        configuration: APIConfiguration
     ) async -> Result<String, CompositionGenerationError> {
         guard !conversation.isEmpty else {
             return .failure(CompositionGenerationError("Conversation is empty."))
@@ -1142,6 +1145,17 @@ private enum CompositionChatEngine {
         Reply as Assistant to the final User message.
         Keep continuity with prior turns.
         """
+
+        if configuration.provider != .appleIntelligence {
+            do {
+                return .success(try await OpenAICompatibleClient.complete(
+                    prompt: "System instructions:\n\(systemPrompt)\n\n\(prompt)",
+                    configuration: configuration
+                ))
+            } catch {
+                return .failure(CompositionGenerationError(error.localizedDescription))
+            }
+        }
 
         let instructions = Instructions {
             systemPrompt
