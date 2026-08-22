@@ -57,8 +57,8 @@ Never commit a real API key. Keys are stored locally in the Keychain and are not
 
 <table>
   <tr>
-    <td align="center"><strong>Prediction</strong><br><img src="Screenshots/claritas-prediction.png" alt="Claritas prediction experience" width="30%"></td>
-    <td align="center"><strong>AI vending machine</strong><br><img src="Screenshots/claritas-vending-machine.png" alt="Claritas AI vending machine experience" width="30%"></td>
-    <td align="center"><strong>Homework story</strong><br><img src="Screenshots/claritas-homework-story.png" alt="Claritas homework story experience" width="30%"></td>
+    <td align="center"><strong>Prediction</strong><br><img src="Screenshots/claritas-prediction.png" alt="Claritas prediction experience" width="60%"></td>
+    <td align="center"><strong>AI vending machine</strong><br><img src="Screenshots/claritas-vending-machine.png" alt="Claritas AI vending machine experience" width="60%"></td>
+    <td align="center"><strong>Homework story</strong><br><img src="Screenshots/claritas-homework-story.png" alt="Claritas homework story experience" width="60%"></td>
   </tr>
 </table>
