@@ -19,7 +19,9 @@ struct SettingsView: View {
                                 .tag(provider)
                         }
                     }
-                    .pickerStyle(.navigationLink)
+                    // Keep provider selection on the Settings screen. A navigation-style
+                    // picker here can appear to pop back through the nested NavigationStack.
+                    .pickerStyle(.inline)
                 } header: {
                     Text("Intelligence")
                 } footer: {
