@@ -15,7 +15,7 @@ struct SettingsView: View {
                 Section {
                     Picker("AI provider", selection: $manager.provider) {
                         ForEach(AIProvider.allCases) { provider in
-                            Label(provider.rawValue, systemImage: provider == .appleIntelligence ? "apple.intelligence" : "network")
+                            Label(provider.rawValue, systemImage: provider == .appleIntelligence ? "apple.intelligence" : provider == .openAI ? "sparkles" : "network")
                                 .tag(provider)
                         }
                     }
@@ -25,11 +25,13 @@ struct SettingsView: View {
                 } footer: {
                     Text(manager.provider == .appleIntelligence
                          ? "Use Apple Intelligence on supported devices."
-                         : "Use OpenAI or any API that follows the OpenAI chat completions format.")
+                         : manager.provider == .openAI
+                         ? "Use OpenAI with the gpt-5.6-luna model."
+                         : "Use any API that follows the OpenAI chat completions format.")
                 }
 
-                if manager.provider == .openAICompatible {
-                    Section("OpenAI-compatible API") {
+                if manager.provider != .appleIntelligence {
+                    Section(manager.provider == .openAI ? "OpenAI API" : "OpenAI-compatible API") {
                         TextField("Endpoint", text: $manager.apiEndpoint)
                             .textInputAutocapitalization(.never)
                             .keyboardType(.URL)

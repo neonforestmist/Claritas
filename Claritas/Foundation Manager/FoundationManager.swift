@@ -4,6 +4,7 @@ import Security
 
 enum AIProvider: String, CaseIterable, Identifiable {
     case appleIntelligence = "Apple Intelligence"
+    case openAI = "OpenAI"
     case openAICompatible = "OpenAI-compatible API"
 
     var id: Self { self }
@@ -30,14 +31,14 @@ final class FoundationManager {
     
     init() {
         apiEndpoint = environment["OPENAI_API_ENDPOINT"] ?? "https://api.openai.com/v1/chat/completions"
-        model = environment["OPENAI_MODEL"] ?? "gpt-4o-mini"
+        model = environment["OPENAI_MODEL"] ?? "gpt-5.6-luna"
         let savedProvider = UserDefaults.standard.string(forKey: "claritas.ai-provider")
-        provider = AIProvider(rawValue: savedProvider ?? "") ?? (environment["OPENAI_API_KEY"] == nil ? .appleIntelligence : .openAICompatible)
+        provider = AIProvider(rawValue: savedProvider ?? "") ?? (environment["OPENAI_API_KEY"] == nil ? .appleIntelligence : .openAI)
         checkIsAvailable()
     }
 
     var hasAPIConfiguration: Bool {
-        provider == .openAICompatible && !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        provider != .appleIntelligence && !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     func saveAPIKey(_ value: String) {

@@ -40,7 +40,7 @@ Developers can also provide configuration through environment variables. Copy `.
 ```text
 OPENAI_API_KEY=your-api-key
 OPENAI_API_ENDPOINT=https://api.openai.com/v1/chat/completions
-OPENAI_MODEL=gpt-4o-mini
+OPENAI_MODEL=gpt-5.6-luna
 ```
 
 The app automatically selects the OpenAI-compatible provider when `OPENAI_API_KEY` is present. The real `.env` file is ignored by Git and must never be committed.
