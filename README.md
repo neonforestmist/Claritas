@@ -35,6 +35,16 @@ For an on-device build, choose a development team under the target's **Signing &
 
 Open **Settings → Intelligence → OpenAI-compatible API**, enter the endpoint, model, and API key, then tap **Save API key**. The default endpoint is OpenAI's chat completions endpoint. Compatible providers can be used by changing the endpoint and model.
 
+Developers can also provide configuration through environment variables. Copy `.env.example` to `.env`, then expose these values in the Claritas Xcode scheme's **Run → Arguments → Environment Variables** section:
+
+```text
+OPENAI_API_KEY=your-api-key
+OPENAI_API_ENDPOINT=https://api.openai.com/v1/chat/completions
+OPENAI_MODEL=gpt-4o-mini
+```
+
+The app automatically selects the OpenAI-compatible provider when `OPENAI_API_KEY` is present. The real `.env` file is ignored by Git and must never be committed.
+
 Never commit a real API key. Keys are stored locally in the Keychain and are not included in the project.
 
 ## Requirements

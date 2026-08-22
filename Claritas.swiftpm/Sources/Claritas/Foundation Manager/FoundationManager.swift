@@ -12,14 +12,15 @@ enum AIProvider: String, CaseIterable, Identifiable {
 @Observable
 final class FoundationManager {
     private let keychainKey = "com.claritas.openai-api-key"
+    private let environment = ProcessInfo.processInfo.environment
 
     var provider: AIProvider {
         didSet { UserDefaults.standard.set(provider.rawValue, forKey: "claritas.ai-provider") }
     }
-    var apiEndpoint = "https://api.openai.com/v1/chat/completions"
-    var model = "gpt-4o-mini"
+    var apiEndpoint: String
+    var model: String
     var apiKey: String {
-        get { KeychainStore.read(key: keychainKey) ?? "" }
+        get { KeychainStore.read(key: keychainKey) ?? environment["OPENAI_API_KEY"] ?? "" }
         set { KeychainStore.save(value: newValue, key: keychainKey) }
     }
     var notAvailableReason = "Checking model availability..."
@@ -28,7 +29,10 @@ final class FoundationManager {
     }
     
     init() {
-        provider = AIProvider(rawValue: UserDefaults.standard.string(forKey: "claritas.ai-provider") ?? "") ?? .appleIntelligence
+        apiEndpoint = environment["OPENAI_API_ENDPOINT"] ?? "https://api.openai.com/v1/chat/completions"
+        model = environment["OPENAI_MODEL"] ?? "gpt-4o-mini"
+        let savedProvider = UserDefaults.standard.string(forKey: "claritas.ai-provider")
+        provider = AIProvider(rawValue: savedProvider ?? "") ?? (environment["OPENAI_API_KEY"] == nil ? .appleIntelligence : .openAICompatible)
         checkIsAvailable()
     }
 
