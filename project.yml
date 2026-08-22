@@ -1,0 +1,25 @@
+name: Claritas
+options:
+  bundleIdPrefix: com.claritas
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    DEVELOPMENT_TEAM: Z3GU26J2H4
+targets:
+  Claritas:
+    type: application
+    platform: iOS
+    sources:
+      - path: Claritas.swiftpm/Sources/Claritas
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.claritas.app
+        INFOPLIST_FILE: Claritas.swiftpm/Sources/Claritas/Support/AdditionalInfo.plist
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_EMIT_LOC_STRINGS: "YES"
+    resources:
+      - path: Claritas.swiftpm/Sources/Claritas/Assets.xcassets

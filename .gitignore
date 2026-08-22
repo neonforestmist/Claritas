@@ -1,0 +1,12 @@
+.DS_Store
+.build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.swp
+
+# Keep credentials and local secrets out of source control.
+.env
+*.pem
+*.p8
+*.mobileprovision
