@@ -381,9 +381,14 @@ private struct PredictionAutocompleteView: View {
 
         isLoading = true
         statusMessage = nil
+        let apiConfiguration = manager.apiConfiguration
 
         predictionTask = Task {
-            let result = await NextWordPredictionEngine.generate(for: input, maxCount: maxPredictionCount)
+            let result = await NextWordPredictionEngine.generate(
+                for: input,
+                maxCount: maxPredictionCount,
+                configuration: apiConfiguration
+            )
             if Task.isCancelled { return }
 
             await MainActor.run {
@@ -562,10 +567,18 @@ private enum NextWordPredictionEngine {
     - Use internal model confidence for likelihood percentages (0 to 100).
     """
 
-    static func generate(for text: String, maxCount: Int) async -> Result<NextWordPredictionResult, NextWordPredictionError> {
+    static func generate(
+        for text: String,
+        maxCount: Int,
+        configuration: APIConfiguration
+    ) async -> Result<NextWordPredictionResult, NextWordPredictionError> {
         let sanitizedInput = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !sanitizedInput.isEmpty else {
             return .failure(NextWordPredictionError("Type a sentence first."))
+        }
+
+        if configuration.provider != .appleIntelligence {
+            return await generateWithAPI(for: sanitizedInput, maxCount: maxCount, configuration: configuration)
         }
 
         switch SystemLanguageModel.default.availability {
@@ -591,6 +604,64 @@ private enum NextWordPredictionEngine {
         case .unavailable:
             return .failure(NextWordPredictionError(modelUnavailableMessage))
         }
+    }
+
+    private static func generateWithAPI(
+        for text: String,
+        maxCount: Int,
+        configuration: APIConfiguration
+    ) async -> Result<NextWordPredictionResult, NextWordPredictionError> {
+        let boundedCount = max(1, min(4, maxCount))
+        let prompt = """
+        User text:
+        \(text)
+
+        Generate exactly up to \(boundedCount) likely immediate next-token predictions.
+        Return one prediction per line in this exact format and nothing else:
+        word|percentage
+        Example:
+        green|85
+        and|70
+        the|65
+        Use one word or punctuation mark per line, sorted highest percentage first. Percentages must be integers from 0 to 100.
+        """
+
+        do {
+            let response = try await OpenAICompatibleClient.complete(prompt: prompt, configuration: configuration)
+            let candidates = parseAPIPredictions(response, maxCount: boundedCount)
+            guard !candidates.isEmpty else {
+                return .failure(NextWordPredictionError("The API returned no usable predictions."))
+            }
+            return .success(NextWordPredictionResult(candidates: candidates))
+        } catch {
+            return .failure(NextWordPredictionError(error.localizedDescription))
+        }
+    }
+
+    private static func parseAPIPredictions(_ response: String, maxCount: Int) -> [PredictedTokenCandidate] {
+        var seen = Set<String>()
+        var candidates: [PredictedTokenCandidate] = []
+
+        for line in response.components(separatedBy: .newlines) {
+            let parts = line.trimmingCharacters(in: .whitespacesAndNewlines)
+                .trimmingCharacters(in: CharacterSet(charactersIn: "`"))
+                .split(separator: "|", maxSplits: 1, omittingEmptySubsequences: true)
+            guard parts.count == 2,
+                  let percentage = Int(parts[1].trimmingCharacters(in: .whitespacesAndNewlines)) else { continue }
+
+            let word = parts[0]
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .replacingOccurrences(of: #"^\d+[.)]\s*"#, with: "", options: .regularExpression)
+            guard !word.isEmpty,
+                  !word.contains(where: { $0.isWhitespace }),
+                  word.count <= 24 else { continue }
+
+            let key = word.lowercased()
+            guard seen.insert(key).inserted else { continue }
+            candidates.append(PredictedTokenCandidate(word: word, percentage: percentage))
+            if candidates.count == maxCount { break }
+        }
+        return candidates.sorted { $0.percentage > $1.percentage }
     }
 
     static func inserting(predictedWord: String, into text: String) -> String {

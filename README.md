@@ -4,7 +4,7 @@ Claritas is a SwiftUI iOS app built for the OpenAI Discord Challenge at the **Bu
 
 ## What I built
 
-Claritas is an interactive AI-literacy app with lessons about AI basics, architecture demonstrations, prediction concepts, and scenario-based stories. It also includes a Settings tab where users can choose Apple Intelligence or an OpenAI-compatible API, enter an endpoint and model, and save an API key securely in the device Keychain.
+Claritas is an interactive AI-literacy app with lessons about AI basics, architecture demonstrations, prediction concepts, and scenario-based stories. It also includes a Settings tab where users can choose Apple Intelligence, OpenAI, or an OpenAI-compatible API, enter a base URL, model ID, and API key, and store the key securely in the device Keychain.
 
 ## Who it helps
 
@@ -43,7 +43,7 @@ For an on-device build, choose a development team under the target's **Signing &
 
 ## API configuration
 
-Open **Settings → Intelligence → OpenAI-compatible API**, enter the endpoint, model, and API key, then tap **Save API key**. The default endpoint is OpenAI's chat completions endpoint. Compatible providers can be used by changing the endpoint and model.
+Open **Settings → Intelligence**, choose OpenAI or OpenAI-compatible API, and enter the base URL, model ID, and API key. The key is stored automatically in the device Keychain. Claritas appends `/chat/completions` to the base URL when making requests.
 
 Developers can also provide configuration through environment variables. Copy `.env.example` to `.env`, then expose these values in the Claritas Xcode scheme's **Run → Arguments → Environment Variables** section:
 

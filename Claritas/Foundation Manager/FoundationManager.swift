@@ -10,6 +10,13 @@ enum AIProvider: String, CaseIterable, Identifiable {
     var id: Self { self }
 }
 
+struct APIConfiguration: Sendable {
+    let provider: AIProvider
+    let baseURL: String
+    let model: String
+    let apiKey: String
+}
+
 @Observable
 final class FoundationManager {
     private let keychainKey = "com.claritas.openai-api-key"
@@ -39,6 +46,10 @@ final class FoundationManager {
 
     var hasAPIConfiguration: Bool {
         provider != .appleIntelligence && !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    var apiConfiguration: APIConfiguration {
+        APIConfiguration(provider: provider, baseURL: apiEndpoint, model: model, apiKey: apiKey)
     }
 
     func saveAPIKey(_ value: String) {
@@ -97,14 +108,64 @@ final class FoundationManager {
     }
 }
 
+enum OpenAICompatibleClient {
+    static func complete(prompt: String, configuration: APIConfiguration) async throws -> String {
+        let baseURL = configuration.baseURL.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let requestURL = baseURL.hasSuffix("/chat/completions") ? baseURL : "\(baseURL)/chat/completions"
+        guard let url = URL(string: requestURL), !configuration.apiKey.isEmpty else {
+            throw APIError.invalidConfiguration
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.timeoutInterval = 30
+        request.setValue("Bearer \(configuration.apiKey)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: [
+            "model": configuration.model,
+            "messages": [
+                ["role": "system", "content": "You predict immediate next tokens. Follow the requested output format exactly."],
+                ["role": "user", "content": prompt]
+            ],
+            "max_tokens": 120,
+            "temperature": 0.2
+        ])
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200..<300).contains(httpResponse.statusCode) else {
+            throw APIError.requestFailed
+        }
+        let decoded = try JSONDecoder().decode(ChatCompletionResponse.self, from: data)
+        guard let content = decoded.choices.first?.message.content, !content.isEmpty else {
+            throw APIError.emptyResponse
+        }
+        return content
+    }
+}
+
+private struct ChatCompletionResponse: Decodable {
+    let choices: [Choice]
+
+    struct Choice: Decodable {
+        let message: Message
+    }
+
+    struct Message: Decodable {
+        let content: String?
+    }
+}
+
 private enum APIError: LocalizedError {
     case invalidConfiguration
     case requestFailed
+    case emptyResponse
 
     var errorDescription: String? {
         switch self {
         case .invalidConfiguration: return "Enter a valid endpoint and API key first."
         case .requestFailed: return "The API rejected the request. Check the endpoint, model, and key."
+        case .emptyResponse: return "The API returned no usable response."
         }
     }
 }
